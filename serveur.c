@@ -1,7 +1,3 @@
-/*
-	C socket server example
-*/
-
 #include<stdio.h>
 #include<string.h>	//strlen
 #include<sys/socket.h>
@@ -19,53 +15,53 @@ int main(int argc , char *argv[])
 	DIR  *d = opendir("/home/dominique/Documents/test");
 	DIR  *f = opendir("/home/dominique/Documents/test/1.txt");
 	
-	//Create socket
+	//Creation du socket
 	socket_desc = socket(AF_INET , SOCK_STREAM , 0);
 	if (socket_desc == -1)
 	{
-		printf("Could not create socket");
+		printf("impossible de creer le socket");
 	}
-	puts("Socket created");
+	puts("Socket cree");
 	
-	//Prepare the sockaddr_in structure
+	//Preparation de la structuresockaddr_in
 	server.sin_family = AF_INET;
 	server.sin_addr.s_addr = INADDR_ANY;
 	server.sin_port = htons( 8888 );
 	
-	//Bind
+	//Mapping
 	if( bind(socket_desc,(struct sockaddr *)&server , sizeof(server)) < 0)
 	{
-		//print the error message
-		perror("bind failed. Error");
+		//Affichage du message d'erreur
+		perror("Echec du mapping. Erreur");
 		return 1;
 	}
-	puts("bind done");
+	puts("Mapping termine");
 	
-	//Listen
+	//Ecoute du Socket
 	listen(socket_desc , 3);
 	
-	//Accept and incoming connection
-	puts("Waiting for incoming connections...");
+	//Acception de connection entrante
+	puts("En attente des connections client...");
 	c = sizeof(struct sockaddr_in);
 	
-	//accept connection from an incoming client
+	//acceptation de la connection en provenance du client
 	client_sock = accept(socket_desc, (struct sockaddr *)&client, (socklen_t*)&c);
 	if (client_sock < 0)
 	{
-		perror("accept failed");
+		perror("acceptation du protocole refuse");
 		return 1;
 	}
 	puts("Connection accepted");
 	
-	//Receive a message from client
+	//Reception du message depuis le client
 	while( (read_size = recv(client_sock , client_message , 2000 , 0)) > 0 )
 	{
-		//Send the message back to client
-		//affiche la liste de document sur le serveur
+		//renvoie du message vers le client
 		if (client_message[0] == 49)
 		{
 		 	if(d)
 			{
+		        //affiche la liste de document sur le serveur
 				while ((dir = readdir(d)) != NULL)
 				{
 					printf("%s\n", dir->d_name );
@@ -94,12 +90,12 @@ int main(int argc , char *argv[])
 	
 	if(read_size == 0)
 	{
-		puts("Client disconnected");
+		puts("Client deconnecte");
 		fflush(stdout);
 	}
 	else if(read_size == -1)
 	{
-		perror("recv failed");
+		perror("Echec de reception");
 	}
 	
 	return 0;
