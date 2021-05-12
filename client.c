@@ -7,10 +7,12 @@
 
 int main(int argc , char *argv[])
 {
-	int sock;
+	int sock, s, k;
 	struct sockaddr_in server;
 	char message[2000] , server_reply[2000];
 	
+	k = 1;
+
 	//Creation du socket
 	sock = socket(AF_INET , SOCK_STREAM , 0);
 	if (sock == -1)
@@ -35,14 +37,27 @@ int main(int argc , char *argv[])
 	//gardons la communication ouverte avec le serveur
 	while(1)
 	{
-		
+		printf("%s\n", "<=================================================>");
 		printf("%s\n", "Que voulez-vous faire?");
 		printf("%s\n", "1- Lister les fichiers du repertoire");
 		printf("%s\n", "2- Lister un fichier particulier");
 		printf("%s\n", "3- Supprimer les fichiers du repertoire");
-		scanf("%s" , message);
+		printf("%s\n", "4- Pour quitter");
+		printf("%s\n", "<=================================================>");
+		scanf("%d" , &s);
+
+        message[0] = (char) s;
+        if (s == 4)
+        {
+        	k = 0;
+        	close(sock);
+			return 1;
+        }
+
+		// message = s;
 		
 		//envoie des choix vers le serveur
+		// if( send(sock , message , strlen(message) , 0) < 0)
 		if( send(sock , message , strlen(message) , 0) < 0)
 		{
 			puts("Echec de transmission de la demande");

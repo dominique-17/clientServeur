@@ -7,9 +7,10 @@
 
 int main(int argc , char *argv[])
 {
-	int socket_desc , client_sock , c , read_size, i;
+	int socket_desc , client_sock , c , read_size, i, j, s;
 	struct sockaddr_in server , client;
 	char client_message[2000];
+	char fille[288];
 
 	struct dirent *dir;
 	DIR  *d = opendir("/home/dominique/Documents/test");
@@ -23,7 +24,7 @@ int main(int argc , char *argv[])
 	}
 	puts("Socket cree");
 	
-	//Preparation de la structuresockaddr_in
+	//Preparation de la structure sockaddr_in
 	server.sin_family = AF_INET;
 	server.sin_addr.s_addr = INADDR_ANY;
 	server.sin_port = htons( 8888 );
@@ -57,7 +58,16 @@ int main(int argc , char *argv[])
 	while( (read_size = recv(client_sock , client_message , 2000 , 0)) > 0 )
 	{
 		//renvoie du message vers le client
-		if (client_message[0] == 49)
+		printf("%d\n", client_message[0]);
+
+		if(client_message[0] == 4){
+			puts("Client deconnecte");
+			write(client_sock , "Client deconnecte" , strlen("Client deconnecte"));
+			read_size = 0;
+		    fflush(stdout);
+		}
+
+		if (client_message[0] == 1)
 		{
 		 	if(d)
 			{
@@ -65,28 +75,56 @@ int main(int argc , char *argv[])
 				while ((dir = readdir(d)) != NULL)
 				{
 					printf("%s\n", dir->d_name );
+					j = 1;
 					write(client_sock , dir->d_name , strlen(dir->d_name));
-					
 				}
+				if (j != 1)
+				{
+					write(client_sock , "Erreur Survenue" , strlen("Erreur Survenue"));
+					client_message[0] = 0;
+				}
+				j = 0;
+				puts("fermeture du repertoire");
 				closedir(d);
+				puts("repertoire ferme");
 			}
 		}
 
-		if (client_message[0] == 50)
+		if (client_message[0] == 2)
 		{
+			puts("nous sommes la");
 			write(client_sock , "1.txt" , strlen("1.txt"));
-		 	if(f)
-			{
-				while ((dir = readdir(f)) != NULL)
-				{
-					printf("%s\n", dir->d_name );
-					write(client_sock , dir->d_name , strlen(dir->d_name));
+			client_message[0] = 0;
+		 // 	if(f)
+			// {
+			// 	while ((dir = readdir(f)) != NULL)
+			// 	{
+			// 		printf("%s\n", dir->d_name );
+			// 		write(client_sock , dir->d_name , strlen(dir->d_name));
 					
+			// 	}
+			// 	closedir(f);
+			// }
+		}
+		if (client_message[0] == 3)
+		{
+			if(d)
+			{
+		        //affiche la liste de document sur le serveur
+				while ((dir = readdir(d)) != NULL)
+				{
+					sprintf(fille, "%s/%s", "/home/dominique/Documents/test/",dir->d_name);
+					write(client_sock , dir->d_name , strlen(dir->d_name));
+					// write(client_sock , fille , strlen(fille));
+					remove(fille);
 				}
-				closedir(f);
+				client_message[0] = 0;
+				closedir(d);
 			}
 		}
 	}
+
+	printf("%d\n", client_message[0]);
 	
 	if(read_size == 0)
 	{
